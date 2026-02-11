@@ -193,6 +193,7 @@
       .videos ul {
         margin: 8px 0 0;
         padding-left: 18px;
+        list-style: none;
       }
       .videos li {
         margin: 6px 0;
@@ -284,6 +285,85 @@
         border: 1px solid var(--border);
         color: var(--muted);
       }
+
+      /* Print styles */
+      @media print {
+        body {
+          background: white;
+          color: black;
+        }
+        header .sub,
+        .toolbar,
+        .kpi,
+        .footer,
+        .modal,
+        .badge {
+          display: none !important;
+        }
+        header {
+          padding: 10px 0;
+        }
+        h1 {
+          color: black;
+          font-size: 18px;
+          margin-bottom: 20px;
+        }
+        .grid {
+          display: block;
+        }
+        .week {
+          background: white;
+          border: 1px solid #333;
+          page-break-inside: avoid;
+          margin-bottom: 10px;
+          padding: 10px;
+        }
+        .week.video {
+          border-color: #333;
+          box-shadow: none;
+        }
+        .wtitle,
+        .meta,
+        .meta strong,
+        label,
+        .videos,
+        details summary {
+          color: black !important;
+        }
+        details {
+          display: block;
+        }
+        details summary {
+          display: block;
+          cursor: default;
+          font-weight: bold;
+          margin-bottom: 5px;
+        }
+        details summary::marker,
+        details summary::-webkit-details-marker {
+          display: none;
+        }
+        details[open] summary::after {
+          content: "";
+        }
+        .videos {
+          display: block !important;
+        }
+        .mini {
+          display: none;
+        }
+        input[type="checkbox"] {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        .typeTag {
+          border-color: #666;
+          color: #333;
+        }
+        .videos a {
+          color: #0066cc;
+        }
+      }
     </style>
   </head>
   <body>
@@ -294,17 +374,22 @@
         highlighted. Videos are tracked individually.
       </div>
 
-      <div class="sub" style="font-weight: bold">
-        All data is saved locally on your computer and is never uploaded. Use
-        the "Export" feature to create a backup. Resetting or clearing your
-        browser will permanently remove your data. Weekly backups are
-        recommended.
+      <div class="sub" style="margin-top: 8px; opacity: 0.9">
+        <strong>IMPORTANT:</strong>All data is saved locally on your computer
+        and is never uploaded. Use the "Export" feature to create a backup.
+        Resetting or clearing your browser will permanently remove your data.
+        Weekly backups are recommended.
       </div>
 
       <div class="sub" style="margin-top: 8px; opacity: 0.9">
-        Note: A few Psalm chapters repeat intentionally—some are “selected”
-        alongside David’s story, then Psalms are later covered again in a full
-        sweep.
+        <strong>Note:</strong> A few Psalm chapters repeat intentionally—some
+        are “selected” alongside David’s story, then Psalms are later covered
+        again in a full sweep.
+      </div>
+
+      <div class="sub" style="margin-top: 8px; opacity: 0.9">
+        <strong>Videos:</strong> All videos are from The Bible Project and are
+        linked for reference.
       </div>
 
       <div class="toolbar">
@@ -325,6 +410,7 @@
         <span class="pill"
           ><strong id="vpct">0%</strong>&nbsp;videos watched</span
         >
+        <button class="btn" id="printBtn">Print Preview</button>
         <button class="btn" id="exportBtn">Export progress</button>
         <button class="btn" id="importBtn">Import progress</button>
         <button class="btn danger" id="resetBtn">Reset</button>
@@ -1614,6 +1700,26 @@
       }
 
       els.q.oninput = () => render()
+
+      // Print functionality
+      document.getElementById("printBtn").onclick = () => {
+        // Store current state of all details elements
+        const allDetails = document.querySelectorAll("details")
+        const originalStates = Array.from(allDetails).map((d) => d.open)
+
+        // Open all details for printing
+        allDetails.forEach((d) => (d.open = true))
+
+        // Trigger print dialog
+        window.print()
+
+        // Restore original states after print dialog closes
+        setTimeout(() => {
+          allDetails.forEach((d, i) => {
+            d.open = originalStates[i]
+          })
+        }, 100)
+      }
 
       render()
     </script>
