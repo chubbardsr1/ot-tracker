@@ -1,494 +1,1422 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>OT Reading + Video Tracker (Weeks 1–64)</title>
-  <style>
-    :root{
-      --bg:#0b1220; --card:#111a2e; --muted:#9fb0d0; --text:#e9f0ff;
-      --accent:#6ee7b7; --warn:#fbbf24; --border:#223055; --danger:#fb7185;
-    }
-    body{ margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background:linear-gradient(180deg,#070b14 0%, #0b1220 100%); color:var(--text); }
-    header{ padding:20px 16px 10px; max-width:1100px; margin:0 auto; }
-    h1{ margin:0 0 6px; font-size:20px; letter-spacing:.2px; }
-    .sub{ color:var(--muted); font-size:13px; line-height:1.4; }
-    .toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; align-items:center; }
-    .btn{ background:var(--card); border:1px solid var(--border); color:var(--text);
-      padding:8px 10px; border-radius:10px; cursor:pointer; font-size:13px; }
-    .btn:hover{ border-color:#2f4276; }
-    .btn.danger{ border-color:#5a2030; color:#ffd7df; }
-    .btn.danger:hover{ border-color:var(--danger); }
-    .pill{ display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px;
-      border:1px solid var(--border); background:rgba(17,26,46,.6); font-size:13px; color:var(--muted); }
-    input[type="search"]{ background:var(--card); border:1px solid var(--border); color:var(--text);
-      padding:8px 10px; border-radius:10px; font-size:13px; min-width:260px; outline:none; }
-    input[type="search"]:focus{ border-color:#2f4276; }
-    main{ max-width:1100px; margin:0 auto; padding:8px 16px 26px; }
-    .grid{ display:grid; grid-template-columns: 1fr; gap:10px; }
-    @media(min-width:900px){ .grid{ grid-template-columns: 1fr 1fr; } }
-    .week{
-      background:rgba(17,26,46,.85);
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:12px 12px 10px;
-      position:relative;
-    }
-    .week.video{ border-color:#3a3a18; box-shadow: 0 0 0 1px rgba(251,191,36,.15) inset; }
-    .row{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
-    .wtitle{ font-weight:700; font-size:14px; margin:0 0 6px; }
-    .meta{ font-size:13px; color:var(--muted); line-height:1.35; }
-    .badges{ display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
-    .badge{ font-size:11px; padding:3px 8px; border-radius:999px; border:1px solid var(--border); color:var(--muted); }
-    .badge.video{ border-color:#4b3a14; color:#ffe7b3; background:rgba(251,191,36,.08); }
-    .badge.done{ border-color:#1e4d3b; color:#c7ffea; background:rgba(110,231,183,.10); }
-    .checks{ display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; }
-    label{ display:flex; gap:8px; align-items:center; font-size:13px; color:var(--text); }
-    input[type="checkbox"]{ width:16px; height:16px; accent-color: var(--accent); }
-    details{ margin-top:10px; }
-    details summary{ cursor:pointer; color:#dbe7ff; font-size:13px; }
-    .videos{ margin-top:8px; padding-left:0; color:var(--muted); font-size:13px; line-height:1.35; }
-    .videos ul{ margin:8px 0 0; padding-left:18px; }
-    .videos li{ margin:6px 0; }
-    .videos a{ color:#bfe6ff; text-decoration:none; }
-    .videos a:hover{ text-decoration:underline; }
-    .footer{ color:var(--muted); font-size:12px; margin-top:14px; }
-    .kpi{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
-    .kpi .pill strong{ color:var(--text); }
-    textarea{ width:100%; min-height:120px; border-radius:12px; border:1px solid var(--border);
-      background:var(--card); color:var(--text); padding:10px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size:12px; outline:none; }
-    .modal{
-      position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.55); padding:16px;
-    }
-    .modal.open{ display:grid; }
-    .panel{
-      width:min(900px, 100%); background:rgba(17,26,46,.96); border:1px solid var(--border); border-radius:16px; padding:14px;
-    }
-    .panel h2{ margin:0 0 8px; font-size:16px; }
-    .panel .actions{ display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; margin-top:10px; }
-    .mini{ font-size:12px; color:var(--muted); margin-top:6px; }
-    .videoCheckLabel{ display:flex; gap:8px; align-items:flex-start; }
-    .videoCheckLabel input{ margin-top:2px; }
-    .videoLine{ display:flex; gap:8px; align-items:flex-start; }
-    .typeTag{ font-size:11px; padding:2px 6px; border-radius:999px; border:1px solid var(--border); color:var(--muted); }
-  </style>
-</head>
-<body>
-<header>
-  <h1>OT Reading + Video Tracker (Weeks 1–64)</h1>
-  <div class="sub">Runs locally. Saves progress in your browser. Video weeks are highlighted. Videos are tracked individually.</div>
-  <div class="sub" style="font-weight:bold;">
-All data is saved locally on your computer and is never uploaded. 
-Use the "Export" feature to create a backup. 
-Resetting or clearing your browser will permanently remove your data. 
-Weekly backups are recommended.
-</div>
-  <div class="sub" style="margin-top:8px; opacity:.9;">
-  Note: A few Psalm chapters repeat intentionally—some are “selected” alongside David’s story, then Psalms are later covered again in a full sweep.
-</div>
-
-
-  <div class="toolbar">
-    <input id="q" type="search" placeholder="Search (book, phase, theme, week #)..." />
-    <span class="pill"><strong id="pct">0%</strong>&nbsp;reading complete</span>
-    <span class="pill"><strong id="vpct">0%</strong>&nbsp;videos watched</span>
-    <button class="btn" id="exportBtn">Export progress</button>
-    <button class="btn" id="importBtn">Import progress</button>
-    <button class="btn danger" id="resetBtn">Reset</button>
-  </div>
-
-  <div class="kpi">
-    <span class="pill">Weeks read: <strong id="rdone">0</strong>/<span id="rtotal">0</span></span>
-    <span class="pill">Video weeks: <strong id="vweeks">0</strong></span>
-    <span class="pill">Videos watched: <strong id="vdone">0</strong>/<span id="vtotal">0</span></span>
-  </div>
-</header>
-
-<main>
-  <div class="grid" id="list"></div>
-  <div class="footer">Share: send this <strong>index.html</strong>. To share progress: Export JSON and they can Import.</div>
-</main>
-
-<!-- Modal for import/export -->
-<div class="modal" id="modal">
-  <div class="panel">
-    <h2 id="modalTitle">Export</h2>
-    <div class="sub" id="modalHelp"></div>
-    <div style="margin-top:10px;">
-      <textarea id="jsonBox" spellcheck="false"></textarea>
-    </div>
-    <div class="actions">
-      <button class="btn" id="copyBtn">Copy</button>
-      <button class="btn" id="closeBtn">Close</button>
-      <button class="btn" id="applyBtn" style="display:none;">Apply Import</button>
-    </div>
-  </div>
-</div>
-
-<script>
-/**
- * Storage:
- * - localStorage key "ot_tracker_v2"
- *
- * State structure:
- * state[weekNum] = {
- *   readDone: boolean,
- *   videos: { [videoId]: boolean }
- * }
- *
- * Notes:
- * - We compute "Week video complete" when all videos for that week are checked.
- * - We also compute overall % videos watched by counting all video items.
- */
-const weeks = [
-  {w:1, phase:"Phase 1", reading:"Genesis 1–4", theme:"Creation, fall, first sin"},
-  {w:2, phase:"Phase 1", reading:"Genesis 5–9", theme:"Flood and covenant with Noah"},
-  {w:3, phase:"Phase 1", reading:"Genesis 10–11", theme:"Nations and Babel"},
-  {w:4, phase:"Phase 1", reading:"Job 1–21", theme:"Suffering and God’s sovereignty"},
-  {w:5, phase:"Phase 1", reading:"Job 22–42", theme:"God’s wisdom over human understanding"},
-  {w:6, phase:"Phase 1", reading:"Genesis 12–25", theme:"Abraham and the covenant"},
-
-  {w:7, phase:"Phase 2", reading:"Genesis 26–36", theme:"Isaac and Jacob"},
-  {w:8, phase:"Phase 2", reading:"Genesis 37–45", theme:"Joseph in Egypt"},
-  {w:9, phase:"Phase 2", reading:"Genesis 46–50", theme:"Israel in Egypt"},
-  {w:10, phase:"Phase 2", reading:"Exodus 1–18", theme:"Moses and the Exodus"},
-
-  {w:11, phase:"Phase 3", reading:"Exodus 19–40", theme:"Sinai and the tabernacle"},
-  {w:12, phase:"Phase 3", reading:"Leviticus 1–16", theme:"Sacrifice and holiness"},
-  {w:13, phase:"Phase 3", reading:"Leviticus 17–27", theme:"Living as God’s people"},
-  {w:14, phase:"Phase 3", reading:"Numbers 1–14", theme:"Rebellion in the wilderness"},
-  {w:15, phase:"Phase 3", reading:"Numbers 15–36", theme:"Consequences and preparation"},
-  {w:16, phase:"Phase 3", reading:"Deuteronomy 1–34 (EB)", theme:"Moses’ final sermons"},
-
-  {w:17, phase:"Phase 4", reading:"Joshua 1–12", theme:"Conquest of Canaan"},
-  {w:18, phase:"Phase 4", reading:"Joshua 13–24", theme:"Division of the land"},
-  {w:19, phase:"Phase 4", reading:"Judges 1–8", theme:"Cycle of sin and deliverance"},
-  {w:20, phase:"Phase 4", reading:"Judges 9–21", theme:"Moral decline of Israel"},
-  {w:21, phase:"Phase 4", reading:"Ruth (EB)", theme:"Redemption in dark times"},
-  {w:22, phase:"Phase 4", reading:"1 Samuel 1–15", theme:"Samuel and Saul"},
-
-  {w:23, phase:"Phase 5", reading:"1 Samuel 16–31", theme:"Rise of David"},
-  {w:24, phase:"Phase 5", reading:"2 Samuel 1–12; 1 Chronicles 10–20", theme:"David’s kingdom"},
-  {w:25, phase:"Phase 5", reading:"Psalms 3–41 (selected)", theme:"David’s early reign"},
-  {w:26, phase:"Phase 5", reading:"2 Samuel 13–24; 1 Chronicles 21–29", theme:"David’s later years"},
-  {w:27, phase:"Phase 5", reading:"Psalms 5–77 (selected)", theme:"David’s struggles"},
-  {w:28, phase:"Phase 5", reading:"1 Kings 1–4; 2 Chronicles 1–3", theme:"Solomon established"},
-  {w:29, phase:"Phase 5", reading:"1 Kings 5–11; 2 Chronicles 4–9", theme:"Solomon’s reign"},
-  {w:30, phase:"Phase 5", reading:"Proverbs 1–31 (EB)", theme:"Wisdom for life"},
-  {w:31, phase:"Phase 5", reading:"Ecclesiastes (EB); Song of Solomon (EB)", theme:"Meaning of life and love"},
-
-  {w:32, phase:"Phase 6", reading:"1 Kings 12–16; 2 Chronicles 10–16", theme:"Kingdom divides"},
-  {w:33, phase:"Phase 6", reading:"1 Kings 17–22; 2 Chronicles 17–20", theme:"Elijah and Ahab"},
-  {w:34, phase:"Phase 6", reading:"2 Kings 1–8; 2 Chronicles 21–24", theme:"Elisha’s ministry"},
-  {w:35, phase:"Phase 6", reading:"Obadiah (EB); Joel (EB)", theme:"Early prophets"},
-  {w:36, phase:"Phase 6", reading:"2 Kings 9–17; 2 Chronicles 25–28", theme:"Fall of Israel (north)"},
-  {w:37, phase:"Phase 6", reading:"Jonah (EB); Amos (EB); Hosea (EB)", theme:"Prophets to the north"},
-  {w:38, phase:"Phase 6", reading:"2 Kings 18–20; 2 Chronicles 29–32", theme:"Hezekiah"},
-  {w:39, phase:"Phase 6", reading:"Isaiah 1–39; Micah (EB)", theme:"Judgment and hope"},
-  {w:40, phase:"Phase 6", reading:"2 Kings 21–23; 2 Chronicles 33–35", theme:"Last reforms"},
-  {w:41, phase:"Phase 6", reading:"Nahum (EB); Zephaniah (EB); Habakkuk (EB)", theme:"Judgment on nations"},
-
-  {w:42, phase:"Phase 7", reading:"Jeremiah 1–29", theme:"Warning before exile"},
-  {w:43, phase:"Phase 7", reading:"Jeremiah 30–52", theme:"Fall of Jerusalem"},
-  {w:44, phase:"Phase 7", reading:"2 Kings 24–25; 2 Chronicles 36 (EB)", theme:"Exile begins"},
-  {w:45, phase:"Phase 7", reading:"Lamentations (EB)", theme:"Grief after destruction"},
-  {w:46, phase:"Phase 7", reading:"Ezekiel 1–24", theme:"Judgment in exile"},
-
-  {w:47, phase:"Phase 8", reading:"Ezekiel 25–48", theme:"Restoration vision"},
-  {w:48, phase:"Phase 8", reading:"Daniel 1–6", theme:"Faith in exile"},
-  {w:49, phase:"Phase 8", reading:"Daniel 7–12", theme:"Future kingdoms"},
-  {w:50, phase:"Phase 8", reading:"Ezra 1–6; Haggai (EB)", theme:"Return and rebuilding"},
-  {w:51, phase:"Phase 8", reading:"Zechariah (EB)", theme:"Messianic hope"},
-  {w:52, phase:"Phase 8", reading:"Ezra 7–10; Nehemiah (EB); Malachi (EB)", theme:"Final reforms and last prophet"},
-
-  {w:53, phase:"Phase 9", reading:"Esther (EB); Genesis 25:20–34; Psalms 1, 2, 33", theme:"God’s hidden providence and covenant transition"},
-  {w:54, phase:"Phase 9", reading:"1 Chronicles 1–9 (EB); Psalms 46–48, 66–67", theme:"Genealogies and national identity"},
-  {w:55, phase:"Phase 9", reading:"Psalms 71–74, 78–79", theme:"Royal and historical psalms"},
-  {w:56, phase:"Phase 9", reading:"Psalms 80–89", theme:"Temple worship and covenant hope"},
-  {w:57, phase:"Phase 9", reading:"Isaiah 40–45", theme:"Comfort and the sovereign God"},
-  {w:58, phase:"Phase 9", reading:"Isaiah 46–50", theme:"God versus idols; suffering servant"},
-  {w:59, phase:"Phase 9", reading:"Isaiah 51–56", theme:"Salvation and restoration"},
-  {w:60, phase:"Phase 9", reading:"Isaiah 57–66", theme:"New creation and final glory"},
-  {w:61, phase:"Phase 9", reading:"Psalms 90–99", theme:"The Lord reigns"},
-  {w:62, phase:"Phase 9", reading:"Psalms 100–110", theme:"Worship and messianic kingship"},
-  {w:63, phase:"Phase 9", reading:"Psalms 111–130", theme:"Thanksgiving and songs of ascent"},
-  {w:64, phase:"Phase 9", reading:"Psalms 131–150", theme:"Final praise and hallelujah psalms"},
-];
-
-// Videos assigned to weeks (from your master list)
-// Each item gets a stable ID for checkbox tracking.
-const videosByWeek = {
-  1: [
-    {type:"Book", title:"Genesis 1–11", url:"https://bibleproject.com/videos/genesis-1-11/"},
-    {type:"Theme", title:"Creation", url:"https://bibleproject.com/explore/?type=video&search=Creation"},
-    {type:"Theme", title:"Image of God", url:"https://bibleproject.com/explore/?type=video&search=Image%20of%20God"},
-    {type:"Theme", title:"Tree of Life", url:"https://bibleproject.com/explore/?type=video&search=Tree%20of%20Life"},
-    {type:"Theme", title:"The Fall", url:"https://bibleproject.com/explore/?type=video&search=The%20Fall"},
-    {type:"Theme", title:"The Flood", url:"https://bibleproject.com/explore/?type=video&search=The%20Flood"},
-    {type:"Theme", title:"Tower of Babel", url:"https://bibleproject.com/explore/?type=video&search=Tower%20of%20Babel"},
-  ],
-  4: [
-    {type:"Book", title:"Job", url:"https://bibleproject.com/videos/job/"},
-    {type:"Series", title:"Wisdom: Job", url:"https://bibleproject.com/explore/?type=video&search=Wisdom%20Job"},
-  ],
-  6: [
-    {type:"Book", title:"Genesis 12–50", url:"https://bibleproject.com/videos/genesis-12-50/"},
-    {type:"Theme", title:"Covenants", url:"https://bibleproject.com/explore/?type=video&search=Covenants"},
-    {type:"Theme", title:"The Promised Land", url:"https://bibleproject.com/explore/?type=video&search=Promised%20Land"},
-  ],
-  10: [
-    {type:"Book", title:"Exodus 1–18", url:"https://bibleproject.com/explore/?type=video&search=Exodus%201-18"},
-    {type:"Theme", title:"Redemption", url:"https://bibleproject.com/explore/?type=video&search=Redemption"},
-  ],
-  11: [
-    {type:"Book", title:"Exodus 19–40", url:"https://bibleproject.com/explore/?type=video&search=Exodus%2019-40"},
-    {type:"Theme", title:"The Tabernacle", url:"https://bibleproject.com/explore/?type=video&search=Tabernacle"},
-  ],
-  12: [
-    {type:"Book", title:"Leviticus", url:"https://bibleproject.com/videos/leviticus/"},
-    {type:"Theme", title:"Holiness", url:"https://bibleproject.com/explore/?type=video&search=Holiness"},
-    {type:"Theme", title:"Sacrifice", url:"https://bibleproject.com/explore/?type=video&search=Sacrifice"},
-    {type:"Theme", title:"Atonement", url:"https://bibleproject.com/explore/?type=video&search=Atonement"},
-    {type:"Theme", title:"Clean and Unclean", url:"https://bibleproject.com/explore/?type=video&search=Clean%20and%20Unclean"},
-  ],
-  14: [
-    {type:"Book", title:"Numbers", url:"https://bibleproject.com/videos/numbers/"},
-    {type:"Theme", title:"The Wilderness", url:"https://bibleproject.com/explore/?type=video&search=Wilderness"},
-  ],
-  16: [
-    {type:"Book", title:"Deuteronomy", url:"https://bibleproject.com/videos/deuteronomy/"},
-    {type:"Series", title:"The Shema (series)", url:"https://bibleproject.com/explore/?type=video&search=Shema"},
-  ],
-  17: [{type:"Book", title:"Joshua", url:"https://bibleproject.com/videos/joshua/"}],
-  19: [
-    {type:"Book", title:"Judges", url:"https://bibleproject.com/videos/judges/"},
-    {type:"Theme", title:"The Messiah", url:"https://bibleproject.com/explore/?type=video&search=Messiah"},
-  ],
-  21: [{type:"Book", title:"Ruth", url:"https://bibleproject.com/videos/ruth/"}],
-  22: [
-    {type:"Book", title:"1 Samuel", url:"https://bibleproject.com/videos/1-samuel/"},
-    {type:"Theme", title:"The Royal Priest", url:"https://bibleproject.com/explore/?type=video&search=Royal%20Priest"},
-  ],
-  24: [
-    {type:"Book", title:"2 Samuel", url:"https://bibleproject.com/videos/2-samuel/"},
-    {type:"Theme", title:"Davidic Covenant", url:"https://bibleproject.com/explore/?type=video&search=Davidic%20Covenant"},
-  ],
-  28: [
-    {type:"Book", title:"1 Kings", url:"https://bibleproject.com/videos/1-kings/"},
-    {type:"Theme", title:"The Temple", url:"https://bibleproject.com/explore/?type=video&search=Temple"},
-  ],
-  29: [{type:"Book", title:"2 Kings", url:"https://bibleproject.com/videos/2-kings/"}],
-  30: [
-    {type:"Book", title:"Proverbs", url:"https://bibleproject.com/videos/proverbs/"},
-    {type:"Series", title:"Wisdom Series Intro", url:"https://bibleproject.com/explore/?type=video&search=Wisdom%20Series"},
-  ],
-  31: [
-    {type:"Book", title:"Ecclesiastes", url:"https://bibleproject.com/videos/ecclesiastes/"},
-    {type:"Book", title:"Song of Songs", url:"https://bibleproject.com/videos/song-of-songs/"},
-  ],
-  35: [
-    {type:"Book", title:"Obadiah", url:"https://bibleproject.com/videos/obadiah/"},
-    {type:"Book", title:"Joel", url:"https://bibleproject.com/videos/joel/"},
-    {type:"Theme", title:"Day of the Lord", url:"https://bibleproject.com/explore/?type=video&search=Day%20of%20the%20Lord"},
-  ],
-  37: [
-    {type:"Book", title:"Jonah", url:"https://bibleproject.com/videos/jonah/"},
-    {type:"Book", title:"Amos", url:"https://bibleproject.com/videos/amos/"},
-    {type:"Book", title:"Hosea", url:"https://bibleproject.com/videos/hosea/"},
-    {type:"Theme", title:"Justice", url:"https://bibleproject.com/explore/?type=video&search=Justice"},
-    {type:"Theme", title:"Compassion", url:"https://bibleproject.com/explore/?type=video&search=Compassion"},
-  ],
-  39: [
-    {type:"Book", title:"Isaiah 1–39", url:"https://bibleproject.com/explore/?type=video&search=Isaiah%201-39"},
-    {type:"Book", title:"Micah", url:"https://bibleproject.com/videos/micah/"},
-    {type:"Theme", title:"The Prophets", url:"https://bibleproject.com/explore/?type=video&search=Prophets"},
-  ],
-  41: [
-    {type:"Book", title:"Nahum", url:"https://bibleproject.com/videos/nahum/"},
-    {type:"Book", title:"Zephaniah", url:"https://bibleproject.com/videos/zephaniah/"},
-    {type:"Book", title:"Habakkuk", url:"https://bibleproject.com/videos/habakkuk/"},
-  ],
-  42: [
-    {type:"Book", title:"Jeremiah", url:"https://bibleproject.com/videos/jeremiah/"},
-    {type:"Theme", title:"Exile", url:"https://bibleproject.com/explore/?type=video&search=Exile"},
-  ],
-  45: [{type:"Book", title:"Lamentations", url:"https://bibleproject.com/videos/lamentations/"}],
-  46: [
-    {type:"Book", title:"Ezekiel 1–33", url:"https://bibleproject.com/explore/?type=video&search=Ezekiel%201-33"},
-    {type:"Theme", title:"The New Covenant", url:"https://bibleproject.com/explore/?type=video&search=New%20Covenant"},
-  ],
-  48: [
-    {type:"Book", title:"Daniel", url:"https://bibleproject.com/videos/daniel/"},
-    {type:"Theme", title:"Son of Man", url:"https://bibleproject.com/explore/?type=video&search=Son%20of%20Man"},
-  ],
-  50: [
-    {type:"Book", title:"Ezra–Nehemiah", url:"https://bibleproject.com/videos/ezra-nehemiah/"},
-    {type:"Book", title:"Haggai", url:"https://bibleproject.com/videos/haggai/"},
-    {type:"Book", title:"Zechariah", url:"https://bibleproject.com/videos/zechariah/"},
-    {type:"Theme", title:"Return from Exile", url:"https://bibleproject.com/explore/?type=video&search=Return%20from%20Exile"},
-  ],
-  52: [
-    {type:"Book", title:"Malachi", url:"https://bibleproject.com/videos/malachi/"},
-  ],
-  53: [
-    {type:"Book", title:"Esther", url:"https://bibleproject.com/videos/esther/"},
-    {type:"Theme", title:"Providence", url:"https://bibleproject.com/explore/?type=video&search=Providence"},
-  ],
-  57: [
-    {type:"Book", title:"Isaiah 40–66", url:"https://bibleproject.com/explore/?type=video&search=Isaiah%2040-66"},
-    {type:"Theme", title:"Suffering Servant", url:"https://bibleproject.com/explore/?type=video&search=Suffering%20Servant"},
-    {type:"Theme", title:"Gospel of the Kingdom", url:"https://bibleproject.com/explore/?type=video&search=Gospel%20of%20the%20Kingdom"},
-  ],
-  61: [
-    {type:"Book", title:"Psalms", url:"https://bibleproject.com/videos/psalms/"},
-    {type:"Theme", title:"Heaven & Earth", url:"https://bibleproject.com/explore/?type=video&search=Heaven%20and%20Earth"},
-  ],
-};
-
-const STORAGE_KEY = "ot_tracker_v2";
-
-// Helpers
-function escapeHtml(s){
-  return String(s)
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-}
-function stableId(weekNum, item){
-  // Stable enough for your data set: week + type + title
-  // (If you ever rename a title, that will create a new checkbox)
-  return `w${weekNum}:${item.type}:${item.title}`.toLowerCase();
-}
-function hasVideos(weekNum){
-  return Array.isArray(videosByWeek[weekNum]) && videosByWeek[weekNum].length > 0;
-}
-
-function buildInitialState(){
-  const init = {};
-  for(const wk of weeks){
-    init[wk.w] = { readDone:false, videos:{} };
-    if(hasVideos(wk.w)){
-      for(const v of videosByWeek[wk.w]){
-        init[wk.w].videos[stableId(wk.w, v)] = false;
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>OT Reading + Video Tracker (Weeks 1–64)</title>
+    <style>
+      :root {
+        --bg: #0b1220;
+        --card: #111a2e;
+        --muted: #9fb0d0;
+        --text: #e9f0ff;
+        --accent: #6ee7b7;
+        --warn: #fbbf24;
+        --border: #223055;
+        --danger: #fb7185;
       }
-    }
-  }
-  return init;
-}
-
-function migrateIfNeeded(parsed){
-  // If user had v1 saved somewhere (readDone/videoDone), attempt best-effort migration.
-  // We'll support:
-  //  - parsed[w].readDone boolean
-  //  - parsed[w].videoDone boolean (mark all videos checked)
-  const migrated = buildInitialState();
-  if(!parsed || typeof parsed !== "object") return migrated;
-
-  for(const wk of weeks){
-    const incoming = parsed[wk.w];
-    if(incoming && typeof incoming === "object"){
-      if(typeof incoming.readDone === "boolean") migrated[wk.w].readDone = incoming.readDone;
-
-      // If importing older shape with videoDone, apply it to all videos:
-      if(typeof incoming.videoDone === "boolean" && incoming.videoDone === true && hasVideos(wk.w)){
-        for(const key of Object.keys(migrated[wk.w].videos)){
-          migrated[wk.w].videos[key] = true;
+      body {
+        margin: 0;
+        font-family:
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Arial,
+          sans-serif;
+        background: linear-gradient(180deg, #070b14 0%, #0b1220 100%);
+        color: var(--text);
+      }
+      header {
+        padding: 20px 16px 10px;
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+      h1 {
+        margin: 0 0 6px;
+        font-size: 20px;
+        letter-spacing: 0.2px;
+      }
+      .sub {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.4;
+      }
+      .toolbar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+        align-items: center;
+      }
+      .btn {
+        background: var(--card);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 8px 10px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 13px;
+      }
+      .btn:hover {
+        border-color: #2f4276;
+      }
+      .btn.danger {
+        border-color: #5a2030;
+        color: #ffd7df;
+      }
+      .btn.danger:hover {
+        border-color: var(--danger);
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: rgba(17, 26, 46, 0.6);
+        font-size: 13px;
+        color: var(--muted);
+      }
+      input[type="search"] {
+        background: var(--card);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 8px 10px;
+        border-radius: 10px;
+        font-size: 13px;
+        min-width: 260px;
+        outline: none;
+      }
+      input[type="search"]:focus {
+        border-color: #2f4276;
+      }
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 8px 16px 26px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      @media (min-width: 900px) {
+        .grid {
+          grid-template-columns: 1fr 1fr;
         }
       }
+      .week {
+        background: rgba(17, 26, 46, 0.85);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 12px 12px 10px;
+        position: relative;
+      }
+      .week.video {
+        border-color: #3a3a18;
+        box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.15) inset;
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: flex-start;
+      }
+      .wtitle {
+        font-weight: 700;
+        font-size: 14px;
+        margin: 0 0 6px;
+      }
+      .meta {
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.35;
+      }
+      .badges {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+      .badge {
+        font-size: 11px;
+        padding: 3px 8px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        color: var(--muted);
+      }
+      .badge.video {
+        border-color: #4b3a14;
+        color: #ffe7b3;
+        background: rgba(251, 191, 36, 0.08);
+      }
+      .badge.done {
+        border-color: #1e4d3b;
+        color: #c7ffea;
+        background: rgba(110, 231, 183, 0.1);
+      }
+      .checks {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+      label {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font-size: 13px;
+        color: var(--text);
+      }
+      input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--accent);
+      }
+      details {
+        margin-top: 10px;
+      }
+      details summary {
+        cursor: pointer;
+        color: #dbe7ff;
+        font-size: 13px;
+      }
+      .videos {
+        margin-top: 8px;
+        padding-left: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.35;
+      }
+      .videos ul {
+        margin: 8px 0 0;
+        padding-left: 18px;
+      }
+      .videos li {
+        margin: 6px 0;
+      }
+      .videos a {
+        color: #bfe6ff;
+        text-decoration: none;
+      }
+      .videos a:hover {
+        text-decoration: underline;
+      }
+      .footer {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 14px;
+      }
+      .kpi {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+      .kpi .pill strong {
+        color: var(--text);
+      }
+      textarea {
+        width: 100%;
+        min-height: 120px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: var(--card);
+        color: var(--text);
+        padding: 10px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12px;
+        outline: none;
+      }
+      .modal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        place-items: center;
+        background: rgba(0, 0, 0, 0.55);
+        padding: 16px;
+      }
+      .modal.open {
+        display: grid;
+      }
+      .panel {
+        width: min(900px, 100%);
+        background: rgba(17, 26, 46, 0.96);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 14px;
+      }
+      .panel h2 {
+        margin: 0 0 8px;
+        font-size: 16px;
+      }
+      .panel .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        margin-top: 10px;
+      }
+      .mini {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 6px;
+      }
+      .videoCheckLabel {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+      }
+      .videoCheckLabel input {
+        margin-top: 2px;
+      }
+      .videoLine {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+      }
+      .typeTag {
+        font-size: 11px;
+        padding: 2px 6px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>OT Reading + Video Tracker (Weeks 1–64)</h1>
+      <div class="sub">
+        Runs locally. Saves progress in your browser. Video weeks are
+        highlighted. Videos are tracked individually.
+      </div>
 
-      // If importing this v2 shape, respect it:
-      if(incoming.videos && typeof incoming.videos === "object"){
-        for(const [k,val] of Object.entries(incoming.videos)){
-          if(k in migrated[wk.w].videos && typeof val === "boolean"){
-            migrated[wk.w].videos[k] = val;
+      <div class="sub" style="font-weight: bold">
+        All data is saved locally on your computer and is never uploaded. Use
+        the "Export" feature to create a backup. Resetting or clearing your
+        browser will permanently remove your data. Weekly backups are
+        recommended.
+      </div>
+
+      <div class="sub" style="margin-top: 8px; opacity: 0.9">
+        Note: A few Psalm chapters repeat intentionally—some are “selected”
+        alongside David’s story, then Psalms are later covered again in a full
+        sweep.
+      </div>
+
+      <div class="toolbar">
+        <input
+          id="q"
+          type="search"
+          placeholder="Search (book, phase, theme, week #)..."
+        />
+
+        <label class="pill" style="cursor: pointer">
+          <input id="hideDone" type="checkbox" checked style="margin: 0" />
+          Hide completed weeks
+        </label>
+
+        <span class="pill"
+          ><strong id="pct">0%</strong>&nbsp;reading complete</span
+        >
+        <span class="pill"
+          ><strong id="vpct">0%</strong>&nbsp;videos watched</span
+        >
+        <button class="btn" id="exportBtn">Export progress</button>
+        <button class="btn" id="importBtn">Import progress</button>
+        <button class="btn danger" id="resetBtn">Reset</button>
+      </div>
+
+      <div class="kpi">
+        <span class="pill"
+          >Weeks read: <strong id="rdone">0</strong>/<span id="rtotal"
+            >0</span
+          ></span
+        >
+        <span class="pill">Video weeks: <strong id="vweeks">0</strong></span>
+        <span class="pill"
+          >Videos watched: <strong id="vdone">0</strong>/<span id="vtotal"
+            >0</span
+          ></span
+        >
+      </div>
+    </header>
+
+    <main>
+      <div class="grid" id="list"></div>
+      <div class="footer">
+        Share: send this <strong>index.html</strong>. To share progress: Export
+        JSON and they can Import.
+      </div>
+    </main>
+
+    <!-- Modal for import/export -->
+    <div class="modal" id="modal">
+      <div class="panel">
+        <h2 id="modalTitle">Export</h2>
+        <div class="sub" id="modalHelp"></div>
+        <div style="margin-top: 10px">
+          <textarea id="jsonBox" spellcheck="false"></textarea>
+        </div>
+        <div class="actions">
+          <button class="btn" id="copyBtn">Copy</button>
+          <button class="btn" id="closeBtn">Close</button>
+          <button class="btn" id="applyBtn" style="display: none">
+            Apply Import
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /**
+       * Storage:
+       * - localStorage key "ot_tracker_v2"
+       *
+       * State structure (v3-compatible but stored under same key):
+       * state[weekNum] = {
+       *   readDone: boolean,
+       *   readDoneAt: string|null,      // ISO timestamp
+       *   videos: { [videoId]: boolean },
+       *   videosAt: { [videoId]: string|null } // ISO timestamp per video
+       * }
+       *
+       * Notes:
+       * - Backwards compatible with older exports that only have readDone/videos (no dates).
+       * - Hide/Show completed weeks preference stored separately.
+       */
+      const weeks = [
+        {
+          w: 1,
+          phase: "Phase 1",
+          reading: "Genesis 1–4",
+          theme: "Creation, fall, first sin",
+        },
+        {
+          w: 2,
+          phase: "Phase 1",
+          reading: "Genesis 5–9",
+          theme: "Flood and covenant with Noah",
+        },
+        {
+          w: 3,
+          phase: "Phase 1",
+          reading: "Genesis 10–11",
+          theme: "Nations and Babel",
+        },
+        {
+          w: 4,
+          phase: "Phase 1",
+          reading: "Job 1–21",
+          theme: "Suffering and God’s sovereignty",
+        },
+        {
+          w: 5,
+          phase: "Phase 1",
+          reading: "Job 22–42",
+          theme: "God’s wisdom over human understanding",
+        },
+        {
+          w: 6,
+          phase: "Phase 1",
+          reading: "Genesis 12–25",
+          theme: "Abraham and the covenant",
+        },
+
+        {
+          w: 7,
+          phase: "Phase 2",
+          reading: "Genesis 26–36",
+          theme: "Isaac and Jacob",
+        },
+        {
+          w: 8,
+          phase: "Phase 2",
+          reading: "Genesis 37–45",
+          theme: "Joseph in Egypt",
+        },
+        {
+          w: 9,
+          phase: "Phase 2",
+          reading: "Genesis 46–50",
+          theme: "Israel in Egypt",
+        },
+        {
+          w: 10,
+          phase: "Phase 2",
+          reading: "Exodus 1–18",
+          theme: "Moses and the Exodus",
+        },
+
+        {
+          w: 11,
+          phase: "Phase 3",
+          reading: "Exodus 19–40",
+          theme: "Sinai and the tabernacle",
+        },
+        {
+          w: 12,
+          phase: "Phase 3",
+          reading: "Leviticus 1–16",
+          theme: "Sacrifice and holiness",
+        },
+        {
+          w: 13,
+          phase: "Phase 3",
+          reading: "Leviticus 17–27",
+          theme: "Living as God’s people",
+        },
+        {
+          w: 14,
+          phase: "Phase 3",
+          reading: "Numbers 1–14",
+          theme: "Rebellion in the wilderness",
+        },
+        {
+          w: 15,
+          phase: "Phase 3",
+          reading: "Numbers 15–36",
+          theme: "Consequences and preparation",
+        },
+        {
+          w: 16,
+          phase: "Phase 3",
+          reading: "Deuteronomy 1–34 (EB)",
+          theme: "Moses’ final sermons",
+        },
+
+        {
+          w: 17,
+          phase: "Phase 4",
+          reading: "Joshua 1–12",
+          theme: "Conquest of Canaan",
+        },
+        {
+          w: 18,
+          phase: "Phase 4",
+          reading: "Joshua 13–24",
+          theme: "Division of the land",
+        },
+        {
+          w: 19,
+          phase: "Phase 4",
+          reading: "Judges 1–8",
+          theme: "Cycle of sin and deliverance",
+        },
+        {
+          w: 20,
+          phase: "Phase 4",
+          reading: "Judges 9–21",
+          theme: "Moral decline of Israel",
+        },
+        {
+          w: 21,
+          phase: "Phase 4",
+          reading: "Ruth (EB)",
+          theme: "Redemption in dark times",
+        },
+        {
+          w: 22,
+          phase: "Phase 4",
+          reading: "1 Samuel 1–15",
+          theme: "Samuel and Saul",
+        },
+
+        {
+          w: 23,
+          phase: "Phase 5",
+          reading: "1 Samuel 16–31",
+          theme: "Rise of David",
+        },
+        {
+          w: 24,
+          phase: "Phase 5",
+          reading: "2 Samuel 1–12; 1 Chronicles 10–20",
+          theme: "David’s kingdom",
+        },
+        {
+          w: 25,
+          phase: "Phase 5",
+          reading: "Psalms 3–41 (selected)",
+          theme: "David’s early reign",
+        },
+        {
+          w: 26,
+          phase: "Phase 5",
+          reading: "2 Samuel 13–24; 1 Chronicles 21–29",
+          theme: "David’s later years",
+        },
+        {
+          w: 27,
+          phase: "Phase 5",
+          reading: "Psalms 5–77 (selected)",
+          theme: "David’s struggles",
+        },
+        {
+          w: 28,
+          phase: "Phase 5",
+          reading: "1 Kings 1–4; 2 Chronicles 1–3",
+          theme: "Solomon established",
+        },
+        {
+          w: 29,
+          phase: "Phase 5",
+          reading: "1 Kings 5–11; 2 Chronicles 4–9",
+          theme: "Solomon’s reign",
+        },
+        {
+          w: 30,
+          phase: "Phase 5",
+          reading: "Proverbs 1–31 (EB)",
+          theme: "Wisdom for life",
+        },
+        {
+          w: 31,
+          phase: "Phase 5",
+          reading: "Ecclesiastes (EB); Song of Solomon (EB)",
+          theme: "Meaning of life and love",
+        },
+
+        {
+          w: 32,
+          phase: "Phase 6",
+          reading: "1 Kings 12–16; 2 Chronicles 10–16",
+          theme: "Kingdom divides",
+        },
+        {
+          w: 33,
+          phase: "Phase 6",
+          reading: "1 Kings 17–22; 2 Chronicles 17–20",
+          theme: "Elijah and Ahab",
+        },
+        {
+          w: 34,
+          phase: "Phase 6",
+          reading: "2 Kings 1–8; 2 Chronicles 21–24",
+          theme: "Elisha’s ministry",
+        },
+        {
+          w: 35,
+          phase: "Phase 6",
+          reading: "Obadiah (EB); Joel (EB)",
+          theme: "Early prophets",
+        },
+        {
+          w: 36,
+          phase: "Phase 6",
+          reading: "2 Kings 9–17; 2 Chronicles 25–28",
+          theme: "Fall of Israel (north)",
+        },
+        {
+          w: 37,
+          phase: "Phase 6",
+          reading: "Jonah (EB); Amos (EB); Hosea (EB)",
+          theme: "Prophets to the north",
+        },
+        {
+          w: 38,
+          phase: "Phase 6",
+          reading: "2 Kings 18–20; 2 Chronicles 29–32",
+          theme: "Hezekiah",
+        },
+        {
+          w: 39,
+          phase: "Phase 6",
+          reading: "Isaiah 1–39; Micah (EB)",
+          theme: "Judgment and hope",
+        },
+        {
+          w: 40,
+          phase: "Phase 6",
+          reading: "2 Kings 21–23; 2 Chronicles 33–35",
+          theme: "Last reforms",
+        },
+        {
+          w: 41,
+          phase: "Phase 6",
+          reading: "Nahum (EB); Zephaniah (EB); Habakkuk (EB)",
+          theme: "Judgment on nations",
+        },
+
+        {
+          w: 42,
+          phase: "Phase 7",
+          reading: "Jeremiah 1–29",
+          theme: "Warning before exile",
+        },
+        {
+          w: 43,
+          phase: "Phase 7",
+          reading: "Jeremiah 30–52",
+          theme: "Fall of Jerusalem",
+        },
+        {
+          w: 44,
+          phase: "Phase 7",
+          reading: "2 Kings 24–25; 2 Chronicles 36 (EB)",
+          theme: "Exile begins",
+        },
+        {
+          w: 45,
+          phase: "Phase 7",
+          reading: "Lamentations (EB)",
+          theme: "Grief after destruction",
+        },
+        {
+          w: 46,
+          phase: "Phase 7",
+          reading: "Ezekiel 1–24",
+          theme: "Judgment in exile",
+        },
+
+        {
+          w: 47,
+          phase: "Phase 8",
+          reading: "Ezekiel 25–48",
+          theme: "Restoration vision",
+        },
+        {
+          w: 48,
+          phase: "Phase 8",
+          reading: "Daniel 1–6",
+          theme: "Faith in exile",
+        },
+        {
+          w: 49,
+          phase: "Phase 8",
+          reading: "Daniel 7–12",
+          theme: "Future kingdoms",
+        },
+        {
+          w: 50,
+          phase: "Phase 8",
+          reading: "Ezra 1–6; Haggai (EB)",
+          theme: "Return and rebuilding",
+        },
+        {
+          w: 51,
+          phase: "Phase 8",
+          reading: "Zechariah (EB)",
+          theme: "Messianic hope",
+        },
+        {
+          w: 52,
+          phase: "Phase 8",
+          reading: "Ezra 7–10; Nehemiah (EB); Malachi (EB)",
+          theme: "Final reforms and last prophet",
+        },
+
+        {
+          w: 53,
+          phase: "Phase 9",
+          reading: "Esther (EB); Genesis 25:20–34; Psalms 1, 2, 33",
+          theme: "God’s hidden providence and covenant transition",
+        },
+        {
+          w: 54,
+          phase: "Phase 9",
+          reading: "1 Chronicles 1–9 (EB); Psalms 46–48, 66–67",
+          theme: "Genealogies and national identity",
+        },
+        {
+          w: 55,
+          phase: "Phase 9",
+          reading: "Psalms 71–74, 78–79",
+          theme: "Royal and historical psalms",
+        },
+        {
+          w: 56,
+          phase: "Phase 9",
+          reading: "Psalms 80–89",
+          theme: "Temple worship and covenant hope",
+        },
+        {
+          w: 57,
+          phase: "Phase 9",
+          reading: "Isaiah 40–45",
+          theme: "Comfort and the sovereign God",
+        },
+        {
+          w: 58,
+          phase: "Phase 9",
+          reading: "Isaiah 46–50",
+          theme: "God versus idols; suffering servant",
+        },
+        {
+          w: 59,
+          phase: "Phase 9",
+          reading: "Isaiah 51–56",
+          theme: "Salvation and restoration",
+        },
+        {
+          w: 60,
+          phase: "Phase 9",
+          reading: "Isaiah 57–66",
+          theme: "New creation and final glory",
+        },
+        {
+          w: 61,
+          phase: "Phase 9",
+          reading: "Psalms 90–99",
+          theme: "The Lord reigns",
+        },
+        {
+          w: 62,
+          phase: "Phase 9",
+          reading: "Psalms 100–110",
+          theme: "Worship and messianic kingship",
+        },
+        {
+          w: 63,
+          phase: "Phase 9",
+          reading: "Psalms 111–130",
+          theme: "Thanksgiving and songs of ascent",
+        },
+        {
+          w: 64,
+          phase: "Phase 9",
+          reading: "Psalms 131–150",
+          theme: "Final praise and hallelujah psalms",
+        },
+      ]
+
+      // Videos assigned to weeks (from your master list)
+      // Each item gets a stable ID for checkbox tracking.
+      const videosByWeek = {
+        1: [
+          {
+            type: "Book",
+            title: "Genesis 1–11",
+            url: "https://bibleproject.com/videos/genesis-1-11/",
+          },
+          {
+            type: "Theme",
+            title: "Creation",
+            url: "https://bibleproject.com/explore/?type=video&search=Creation",
+          },
+          {
+            type: "Theme",
+            title: "Image of God",
+            url: "https://bibleproject.com/explore/?type=video&search=Image%20of%20God",
+          },
+          {
+            type: "Theme",
+            title: "Tree of Life",
+            url: "https://bibleproject.com/explore/?type=video&search=Tree%20of%20Life",
+          },
+          {
+            type: "Theme",
+            title: "The Fall",
+            url: "https://bibleproject.com/explore/?type=video&search=The%20Fall",
+          },
+          {
+            type: "Theme",
+            title: "The Flood",
+            url: "https://bibleproject.com/explore/?type=video&search=The%20Flood",
+          },
+          {
+            type: "Theme",
+            title: "Tower of Babel",
+            url: "https://bibleproject.com/explore/?type=video&search=Tower%20of%20Babel",
+          },
+        ],
+        4: [
+          {
+            type: "Book",
+            title: "Job",
+            url: "https://bibleproject.com/videos/job/",
+          },
+          {
+            type: "Series",
+            title: "Wisdom: Job",
+            url: "https://bibleproject.com/explore/?type=video&search=Wisdom%20Job",
+          },
+        ],
+        6: [
+          {
+            type: "Book",
+            title: "Genesis 12–50",
+            url: "https://bibleproject.com/videos/genesis-12-50/",
+          },
+          {
+            type: "Theme",
+            title: "Covenants",
+            url: "https://bibleproject.com/explore/?type=video&search=Covenants",
+          },
+          {
+            type: "Theme",
+            title: "The Promised Land",
+            url: "https://bibleproject.com/explore/?type=video&search=Promised%20Land",
+          },
+        ],
+        10: [
+          {
+            type: "Book",
+            title: "Exodus 1–18",
+            url: "https://bibleproject.com/explore/?type=video&search=Exodus%201-18",
+          },
+          {
+            type: "Theme",
+            title: "Redemption",
+            url: "https://bibleproject.com/explore/?type=video&search=Redemption",
+          },
+        ],
+        11: [
+          {
+            type: "Book",
+            title: "Exodus 19–40",
+            url: "https://bibleproject.com/explore/?type=video&search=Exodus%2019-40",
+          },
+          {
+            type: "Theme",
+            title: "The Tabernacle",
+            url: "https://bibleproject.com/explore/?type=video&search=Tabernacle",
+          },
+        ],
+        12: [
+          {
+            type: "Book",
+            title: "Leviticus",
+            url: "https://bibleproject.com/videos/leviticus/",
+          },
+          {
+            type: "Theme",
+            title: "Holiness",
+            url: "https://bibleproject.com/explore/?type=video&search=Holiness",
+          },
+          {
+            type: "Theme",
+            title: "Sacrifice",
+            url: "https://bibleproject.com/explore/?type=video&search=Sacrifice",
+          },
+          {
+            type: "Theme",
+            title: "Atonement",
+            url: "https://bibleproject.com/explore/?type=video&search=Atonement",
+          },
+          {
+            type: "Theme",
+            title: "Clean and Unclean",
+            url: "https://bibleproject.com/explore/?type=video&search=Clean%20and%20Unclean",
+          },
+        ],
+        14: [
+          {
+            type: "Book",
+            title: "Numbers",
+            url: "https://bibleproject.com/videos/numbers/",
+          },
+          {
+            type: "Theme",
+            title: "The Wilderness",
+            url: "https://bibleproject.com/explore/?type=video&search=Wilderness",
+          },
+        ],
+        16: [
+          {
+            type: "Book",
+            title: "Deuteronomy",
+            url: "https://bibleproject.com/videos/deuteronomy/",
+          },
+          {
+            type: "Series",
+            title: "The Shema (series)",
+            url: "https://bibleproject.com/explore/?type=video&search=Shema",
+          },
+        ],
+        17: [
+          {
+            type: "Book",
+            title: "Joshua",
+            url: "https://bibleproject.com/videos/joshua/",
+          },
+        ],
+        19: [
+          {
+            type: "Book",
+            title: "Judges",
+            url: "https://bibleproject.com/videos/judges/",
+          },
+          {
+            type: "Theme",
+            title: "The Messiah",
+            url: "https://bibleproject.com/explore/?type=video&search=Messiah",
+          },
+        ],
+        21: [
+          {
+            type: "Book",
+            title: "Ruth",
+            url: "https://bibleproject.com/videos/ruth/",
+          },
+        ],
+        22: [
+          {
+            type: "Book",
+            title: "1 Samuel",
+            url: "https://bibleproject.com/videos/1-samuel/",
+          },
+          {
+            type: "Theme",
+            title: "The Royal Priest",
+            url: "https://bibleproject.com/explore/?type=video&search=Royal%20Priest",
+          },
+        ],
+        24: [
+          {
+            type: "Book",
+            title: "2 Samuel",
+            url: "https://bibleproject.com/videos/2-samuel/",
+          },
+          {
+            type: "Theme",
+            title: "Davidic Covenant",
+            url: "https://bibleproject.com/explore/?type=video&search=Davidic%20Covenant",
+          },
+        ],
+        28: [
+          {
+            type: "Book",
+            title: "1 Kings",
+            url: "https://bibleproject.com/videos/1-kings/",
+          },
+          {
+            type: "Theme",
+            title: "The Temple",
+            url: "https://bibleproject.com/explore/?type=video&search=Temple",
+          },
+        ],
+        29: [
+          {
+            type: "Book",
+            title: "2 Kings",
+            url: "https://bibleproject.com/videos/2-kings/",
+          },
+        ],
+        30: [
+          {
+            type: "Book",
+            title: "Proverbs",
+            url: "https://bibleproject.com/videos/proverbs/",
+          },
+          {
+            type: "Series",
+            title: "Wisdom Series Intro",
+            url: "https://bibleproject.com/explore/?type=video&search=Wisdom%20Series",
+          },
+        ],
+        31: [
+          {
+            type: "Book",
+            title: "Ecclesiastes",
+            url: "https://bibleproject.com/videos/ecclesiastes/",
+          },
+          {
+            type: "Book",
+            title: "Song of Songs",
+            url: "https://bibleproject.com/videos/song-of-songs/",
+          },
+        ],
+        35: [
+          {
+            type: "Book",
+            title: "Obadiah",
+            url: "https://bibleproject.com/videos/obadiah/",
+          },
+          {
+            type: "Book",
+            title: "Joel",
+            url: "https://bibleproject.com/videos/joel/",
+          },
+          {
+            type: "Theme",
+            title: "Day of the Lord",
+            url: "https://bibleproject.com/explore/?type=video&search=Day%20of%20the%20Lord",
+          },
+        ],
+        37: [
+          {
+            type: "Book",
+            title: "Jonah",
+            url: "https://bibleproject.com/videos/jonah/",
+          },
+          {
+            type: "Book",
+            title: "Amos",
+            url: "https://bibleproject.com/videos/amos/",
+          },
+          {
+            type: "Book",
+            title: "Hosea",
+            url: "https://bibleproject.com/videos/hosea/",
+          },
+          {
+            type: "Theme",
+            title: "Justice",
+            url: "https://bibleproject.com/explore/?type=video&search=Justice",
+          },
+          {
+            type: "Theme",
+            title: "Compassion",
+            url: "https://bibleproject.com/explore/?type=video&search=Compassion",
+          },
+        ],
+        39: [
+          {
+            type: "Book",
+            title: "Isaiah 1–39",
+            url: "https://bibleproject.com/explore/?type=video&search=Isaiah%201-39",
+          },
+          {
+            type: "Book",
+            title: "Micah",
+            url: "https://bibleproject.com/videos/micah/",
+          },
+          {
+            type: "Theme",
+            title: "The Prophets",
+            url: "https://bibleproject.com/explore/?type=video&search=Prophets",
+          },
+        ],
+        41: [
+          {
+            type: "Book",
+            title: "Nahum",
+            url: "https://bibleproject.com/videos/nahum/",
+          },
+          {
+            type: "Book",
+            title: "Zephaniah",
+            url: "https://bibleproject.com/videos/zephaniah/",
+          },
+          {
+            type: "Book",
+            title: "Habakkuk",
+            url: "https://bibleproject.com/videos/habakkuk/",
+          },
+        ],
+        42: [
+          {
+            type: "Book",
+            title: "Jeremiah",
+            url: "https://bibleproject.com/videos/jeremiah/",
+          },
+          {
+            type: "Theme",
+            title: "Exile",
+            url: "https://bibleproject.com/explore/?type=video&search=Exile",
+          },
+        ],
+        45: [
+          {
+            type: "Book",
+            title: "Lamentations",
+            url: "https://bibleproject.com/videos/lamentations/",
+          },
+        ],
+        46: [
+          {
+            type: "Book",
+            title: "Ezekiel 1–33",
+            url: "https://bibleproject.com/explore/?type=video&search=Ezekiel%201-33",
+          },
+          {
+            type: "Theme",
+            title: "The New Covenant",
+            url: "https://bibleproject.com/explore/?type=video&search=New%20Covenant",
+          },
+        ],
+        48: [
+          {
+            type: "Book",
+            title: "Daniel",
+            url: "https://bibleproject.com/videos/daniel/",
+          },
+          {
+            type: "Theme",
+            title: "Son of Man",
+            url: "https://bibleproject.com/explore/?type=video&search=Son%20of%20Man",
+          },
+        ],
+        50: [
+          {
+            type: "Book",
+            title: "Ezra–Nehemiah",
+            url: "https://bibleproject.com/videos/ezra-nehemiah/",
+          },
+          {
+            type: "Book",
+            title: "Haggai",
+            url: "https://bibleproject.com/videos/haggai/",
+          },
+          {
+            type: "Book",
+            title: "Zechariah",
+            url: "https://bibleproject.com/videos/zechariah/",
+          },
+          {
+            type: "Theme",
+            title: "Return from Exile",
+            url: "https://bibleproject.com/explore/?type=video&search=Return%20from%20Exile",
+          },
+        ],
+        52: [
+          {
+            type: "Book",
+            title: "Malachi",
+            url: "https://bibleproject.com/videos/malachi/",
+          },
+        ],
+        53: [
+          {
+            type: "Book",
+            title: "Esther",
+            url: "https://bibleproject.com/videos/esther/",
+          },
+          {
+            type: "Theme",
+            title: "Providence",
+            url: "https://bibleproject.com/explore/?type=video&search=Providence",
+          },
+        ],
+        57: [
+          {
+            type: "Book",
+            title: "Isaiah 40–66",
+            url: "https://bibleproject.com/explore/?type=video&search=Isaiah%2040-66",
+          },
+          {
+            type: "Theme",
+            title: "Suffering Servant",
+            url: "https://bibleproject.com/explore/?type=video&search=Suffering%20Servant",
+          },
+          {
+            type: "Theme",
+            title: "Gospel of the Kingdom",
+            url: "https://bibleproject.com/explore/?type=video&search=Gospel%20of%20the%20Kingdom",
+          },
+        ],
+        61: [
+          {
+            type: "Book",
+            title: "Psalms",
+            url: "https://bibleproject.com/videos/psalms/",
+          },
+          {
+            type: "Theme",
+            title: "Heaven & Earth",
+            url: "https://bibleproject.com/explore/?type=video&search=Heaven%20and%20Earth",
+          },
+        ],
+      }
+
+      const STORAGE_KEY = "ot_tracker_v2" // keep same key so existing data loads
+      const PREF_HIDE_DONE_KEY = "ot_tracker_hide_done"
+
+      // Helpers
+      function escapeHtml(s) {
+        return String(s)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;")
+      }
+      function stableId(weekNum, item) {
+        // week + type + title (renaming title will create a new checkbox)
+        return `w${weekNum}:${item.type}:${item.title}`.toLowerCase()
+      }
+      function hasVideos(weekNum) {
+        return (
+          Array.isArray(videosByWeek[weekNum]) &&
+          videosByWeek[weekNum].length > 0
+        )
+      }
+
+      function buildInitialState() {
+        const init = {}
+        for (const wk of weeks) {
+          init[wk.w] = {
+            readDone: false,
+            readDoneAt: null,
+            videos: {},
+            videosAt: {},
+          }
+
+          if (hasVideos(wk.w)) {
+            for (const v of videosByWeek[wk.w]) {
+              const id = stableId(wk.w, v)
+              init[wk.w].videos[id] = false
+              init[wk.w].videosAt[id] = null
+            }
           }
         }
+        return init
       }
-    }
-  }
-  return migrated;
-}
 
-function loadState(){
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if(!raw) return buildInitialState();
+      function migrateIfNeeded(parsed) {
+        // Supports:
+        // - older: readDone + videos only (no dates)
+        // - older: videoDone boolean (mark all videos checked)
+        // - newer: readDoneAt + videosAt present
+        const migrated = buildInitialState()
+        if (!parsed || typeof parsed !== "object") return migrated
 
-  try{
-    const parsed = JSON.parse(raw);
-    return migrateIfNeeded(parsed);
-  }catch{
-    localStorage.removeItem(STORAGE_KEY);
-    return buildInitialState();
-  }
-}
+        for (const wk of weeks) {
+          const incoming = parsed[wk.w]
+          if (incoming && typeof incoming === "object") {
+            // reading
+            if (typeof incoming.readDone === "boolean")
+              migrated[wk.w].readDone = incoming.readDone
 
-function saveState(state){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
+            if (
+              typeof incoming.readDoneAt === "string" ||
+              incoming.readDoneAt === null
+            ) {
+              migrated[wk.w].readDoneAt = incoming.readDoneAt
+            }
 
-let state = loadState();
+            // legacy: videoDone marks all videos true
+            if (
+              typeof incoming.videoDone === "boolean" &&
+              incoming.videoDone === true &&
+              hasVideos(wk.w)
+            ) {
+              for (const key of Object.keys(migrated[wk.w].videos)) {
+                migrated[wk.w].videos[key] = true
+                // if no dates in incoming, keep null (or could set now; keeping null avoids "fake" dates)
+                migrated[wk.w].videosAt[key] =
+                  migrated[wk.w].videosAt[key] ?? null
+              }
+            }
 
-// DOM
-const els = {
-  list: document.getElementById("list"),
-  q: document.getElementById("q"),
-  pct: document.getElementById("pct"),
-  vpct: document.getElementById("vpct"),
-  rdone: document.getElementById("rdone"),
-  rtotal: document.getElementById("rtotal"),
-  vdone: document.getElementById("vdone"),
-  vtotal: document.getElementById("vtotal"),
-  vweeks: document.getElementById("vweeks"),
-  exportBtn: document.getElementById("exportBtn"),
-  importBtn: document.getElementById("importBtn"),
-  resetBtn: document.getElementById("resetBtn"),
-  modal: document.getElementById("modal"),
-  modalTitle: document.getElementById("modalTitle"),
-  modalHelp: document.getElementById("modalHelp"),
-  jsonBox: document.getElementById("jsonBox"),
-  copyBtn: document.getElementById("copyBtn"),
-  closeBtn: document.getElementById("closeBtn"),
-  applyBtn: document.getElementById("applyBtn"),
-};
+            // videos booleans (v2)
+            if (incoming.videos && typeof incoming.videos === "object") {
+              for (const [k, val] of Object.entries(incoming.videos)) {
+                if (k in migrated[wk.w].videos && typeof val === "boolean") {
+                  migrated[wk.w].videos[k] = val
+                  if (val === false) migrated[wk.w].videosAt[k] = null
+                }
+              }
+            }
 
-function isWeekVideosComplete(weekNum){
-  if(!hasVideos(weekNum)) return false;
-  const vids = state[weekNum]?.videos || {};
-  const keys = Object.keys(vids);
-  if(keys.length === 0) return false;
-  return keys.every(k => vids[k] === true);
-}
+            // videos dates (v3)
+            if (incoming.videosAt && typeof incoming.videosAt === "object") {
+              for (const [k, val] of Object.entries(incoming.videosAt)) {
+                if (
+                  k in migrated[wk.w].videosAt &&
+                  (typeof val === "string" || val === null)
+                ) {
+                  migrated[wk.w].videosAt[k] = val
+                }
+              }
+            }
+          }
+        }
+        return migrated
+      }
 
-function render(){
-  const query = (els.q.value || "").trim().toLowerCase();
-  els.list.innerHTML = "";
+      function loadState() {
+        const raw = localStorage.getItem(STORAGE_KEY)
+        if (!raw) return buildInitialState()
 
-  const filtered = weeks.filter(wk=>{
-    if(!query) return true;
-    const hay = `${wk.w} ${wk.phase} ${wk.reading} ${wk.theme}`.toLowerCase();
-    return hay.includes(query);
-  });
+        try {
+          const parsed = JSON.parse(raw)
+          return migrateIfNeeded(parsed)
+        } catch {
+          localStorage.removeItem(STORAGE_KEY)
+          return buildInitialState()
+        }
+      }
 
-  for(const wk of filtered){
-    const v = hasVideos(wk.w);
-    const s = state[wk.w] || {readDone:false, videos:{}};
-    const videosComplete = isWeekVideosComplete(wk.w);
+      function saveState(state) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+      }
 
-    const badges = [];
-    if(v) badges.push(`<span class="badge video">VIDEO</span>`);
-    if(s.readDone) badges.push(`<span class="badge done">READ ✓</span>`);
-    if(v && videosComplete) badges.push(`<span class="badge done">VIDEO ✓</span>`);
+      let state = loadState()
 
-    const card = document.createElement("div");
-    card.className = "week" + (v ? " video" : "");
+      // Hide done preference
+      let hideDone = localStorage.getItem(PREF_HIDE_DONE_KEY)
+      hideDone = hideDone === null ? true : hideDone === "true"
 
-    const videosHtml = v ? renderVideosList(wk.w) : "";
+      // DOM
+      const els = {
+        list: document.getElementById("list"),
+        q: document.getElementById("q"),
+        hideDone: document.getElementById("hideDone"),
+        pct: document.getElementById("pct"),
+        vpct: document.getElementById("vpct"),
+        rdone: document.getElementById("rdone"),
+        rtotal: document.getElementById("rtotal"),
+        vdone: document.getElementById("vdone"),
+        vtotal: document.getElementById("vtotal"),
+        vweeks: document.getElementById("vweeks"),
+        exportBtn: document.getElementById("exportBtn"),
+        importBtn: document.getElementById("importBtn"),
+        resetBtn: document.getElementById("resetBtn"),
+        modal: document.getElementById("modal"),
+        modalTitle: document.getElementById("modalTitle"),
+        modalHelp: document.getElementById("modalHelp"),
+        jsonBox: document.getElementById("jsonBox"),
+        copyBtn: document.getElementById("copyBtn"),
+        closeBtn: document.getElementById("closeBtn"),
+        applyBtn: document.getElementById("applyBtn"),
+      }
 
-    card.innerHTML = `
+      els.hideDone.checked = hideDone
+      els.hideDone.onchange = () => {
+        hideDone = els.hideDone.checked
+        localStorage.setItem(PREF_HIDE_DONE_KEY, String(hideDone))
+        render()
+      }
+
+      function isWeekVideosComplete(weekNum) {
+        if (!hasVideos(weekNum)) return false
+        const vids = state[weekNum]?.videos || {}
+        const keys = Object.keys(vids)
+        if (keys.length === 0) return false
+        return keys.every((k) => vids[k] === true)
+      }
+
+      function render() {
+        const query = (els.q.value || "").trim().toLowerCase()
+        els.list.innerHTML = ""
+
+        const filtered = weeks.filter((wk) => {
+          // hide weeks that have reading complete
+          if (hideDone && state[wk.w]?.readDone) return false
+
+          if (!query) return true
+          const hay =
+            `${wk.w} ${wk.phase} ${wk.reading} ${wk.theme}`.toLowerCase()
+          return hay.includes(query)
+        })
+
+        for (const wk of filtered) {
+          const v = hasVideos(wk.w)
+          const s = state[wk.w] || {
+            readDone: false,
+            readDoneAt: null,
+            videos: {},
+            videosAt: {},
+          }
+          const videosComplete = isWeekVideosComplete(wk.w)
+
+          const badges = []
+          if (v) badges.push(`<span class="badge video">VIDEO</span>`)
+          if (s.readDone) badges.push(`<span class="badge done">READ ✓</span>`)
+          if (v && videosComplete)
+            badges.push(`<span class="badge done">VIDEO ✓</span>`)
+
+          const card = document.createElement("div")
+          card.className = "week" + (v ? " video" : "")
+
+          const videosHtml = v ? renderVideosList(wk.w) : ""
+
+          card.innerHTML = `
       <div class="row">
         <div>
           <div class="wtitle">Week ${wk.w} • ${escapeHtml(wk.phase)}</div>
@@ -501,39 +1429,43 @@ function render(){
       </div>
 
       <div class="checks">
-        <label><input type="checkbox" data-w="${wk.w}" data-k="readDone" ${s.readDone ? "checked":""}/> Reading complete</label>
+        <label><input type="checkbox" data-w="${wk.w}" data-k="readDone" ${s.readDone ? "checked" : ""}/> Reading complete</label>
       </div>
 
       ${videosHtml}
-    `;
+    `
 
-    els.list.appendChild(card);
-  }
+          els.list.appendChild(card)
+        }
 
-  wireCheckboxes();
-  updateStats();
-}
+        wireCheckboxes()
+        updateStats()
+      }
 
-function renderVideosList(weekNum){
-  const items = videosByWeek[weekNum] || [];
-  const vids = state[weekNum]?.videos || {};
-  const doneCount = items.reduce((n,it)=> n + (vids[stableId(weekNum,it)] ? 1 : 0), 0);
-  const totalCount = items.length;
+      function renderVideosList(weekNum) {
+        const items = videosByWeek[weekNum] || []
+        const vids = state[weekNum]?.videos || {}
+        const doneCount = items.reduce(
+          (n, it) => n + (vids[stableId(weekNum, it)] ? 1 : 0),
+          0,
+        )
+        const totalCount = items.length
 
-  return `
+        return `
     <details>
       <summary>Videos for Week ${weekNum} (${doneCount}/${totalCount} watched)</summary>
       <div class="videos">
         <div class="mini">Tip: check each video as you watch it.</div>
         <ul>
-          ${items.map(item=>{
-            const id = stableId(weekNum, item);
-            const checked = !!vids[id];
-            return `
+          ${items
+            .map((item) => {
+              const id = stableId(weekNum, item)
+              const checked = !!vids[id]
+              return `
               <li>
                 <div class="videoLine">
                   <label class="videoCheckLabel">
-                    <input type="checkbox" data-w="${weekNum}" data-k="videoItem" data-vid="${escapeHtml(id)}" ${checked ? "checked":""}/>
+                    <input type="checkbox" data-w="${weekNum}" data-k="videoItem" data-vid="${escapeHtml(id)}" ${checked ? "checked" : ""}/>
                     <span>
                       <span class="typeTag">[${escapeHtml(item.type)}]</span>
                       <a href="${item.url}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.title)}</a>
@@ -541,128 +1473,149 @@ function renderVideosList(weekNum){
                   </label>
                 </div>
               </li>
-            `;
-          }).join("")}
+            `
+            })
+            .join("")}
         </ul>
       </div>
     </details>
-  `;
-}
-
-function wireCheckboxes(){
-  document.querySelectorAll('input[type="checkbox"][data-w]').forEach(cb=>{
-    cb.onchange = (e)=>{
-      const w = Number(e.target.getAttribute("data-w"));
-      const k = e.target.getAttribute("data-k");
-
-      if(k === "readDone"){
-        state[w].readDone = e.target.checked;
+  `
       }
 
-      if(k === "videoItem"){
-        const vid = e.target.getAttribute("data-vid");
-        if(!state[w].videos) state[w].videos = {};
-        // Only allow if it exists in current dataset
-        if(vid in state[w].videos){
-          state[w].videos[vid] = e.target.checked;
+      function wireCheckboxes() {
+        document
+          .querySelectorAll('input[type="checkbox"][data-w]')
+          .forEach((cb) => {
+            cb.onchange = (e) => {
+              const w = Number(e.target.getAttribute("data-w"))
+              const k = e.target.getAttribute("data-k")
+
+              if (k === "readDone") {
+                state[w].readDone = e.target.checked
+                state[w].readDoneAt = e.target.checked
+                  ? new Date().toISOString()
+                  : null
+              }
+
+              if (k === "videoItem") {
+                const vid = e.target.getAttribute("data-vid")
+                if (!state[w].videos) state[w].videos = {}
+                if (!state[w].videosAt) state[w].videosAt = {}
+
+                // Only allow if it exists in current dataset
+                if (vid in state[w].videos) {
+                  state[w].videos[vid] = e.target.checked
+                  state[w].videosAt[vid] = e.target.checked
+                    ? new Date().toISOString()
+                    : null
+                }
+              }
+
+              saveState(state)
+              updateStats()
+              // Re-render to update badges + counts + filtering
+              render()
+            }
+          })
+      }
+
+      function updateStats() {
+        const totalWeeks = weeks.length
+        const readDoneCount = weeks.reduce(
+          (n, wk) => n + (state[wk.w]?.readDone ? 1 : 0),
+          0,
+        )
+
+        // Video totals: count individual videos across all weeks
+        const videoWeeks = weeks.filter((wk) => hasVideos(wk.w))
+        const vWeeksCount = videoWeeks.length
+
+        let vTotal = 0
+        let vDone = 0
+
+        for (const wk of videoWeeks) {
+          const items = videosByWeek[wk.w] || []
+          vTotal += items.length
+          const vids = state[wk.w]?.videos || {}
+          for (const it of items) {
+            const id = stableId(wk.w, it)
+            if (vids[id]) vDone += 1
+          }
+        }
+
+        const pct = totalWeeks
+          ? Math.round((readDoneCount / totalWeeks) * 100)
+          : 0
+        const vpct = vTotal ? Math.round((vDone / vTotal) * 100) : 0
+
+        els.pct.textContent = `${pct}%`
+        els.vpct.textContent = `${vpct}%`
+        els.rdone.textContent = readDoneCount
+        els.rtotal.textContent = totalWeeks
+        els.vweeks.textContent = vWeeksCount
+        els.vdone.textContent = vDone
+        els.vtotal.textContent = vTotal
+      }
+
+      // Export/Import
+      function openModal(mode) {
+        els.modal.classList.add("open")
+        if (mode === "export") {
+          els.modalTitle.textContent = "Export progress"
+          els.modalHelp.textContent = "Copy this JSON and save it (or send it)."
+          els.applyBtn.style.display = "none"
+          els.jsonBox.value = JSON.stringify(state, null, 2)
+        } else {
+          els.modalTitle.textContent = "Import progress"
+          els.modalHelp.textContent =
+            "Paste JSON exported from this app. Then click Apply Import."
+          els.applyBtn.style.display = "inline-block"
+          els.jsonBox.value = ""
+        }
+      }
+      function closeModal() {
+        els.modal.classList.remove("open")
+      }
+
+      els.exportBtn.onclick = () => openModal("export")
+      els.importBtn.onclick = () => openModal("import")
+      els.closeBtn.onclick = closeModal
+
+      els.copyBtn.onclick = async () => {
+        try {
+          await navigator.clipboard.writeText(els.jsonBox.value)
+          els.copyBtn.textContent = "Copied!"
+          setTimeout(() => (els.copyBtn.textContent = "Copy"), 900)
+        } catch {
+          alert(
+            "Could not copy automatically. Select the text and copy manually.",
+          )
         }
       }
 
-      saveState(state);
-      updateStats();
-      // Re-render to update badges + counts
-      render();
-    };
-  });
-}
+      els.applyBtn.onclick = () => {
+        try {
+          const incoming = JSON.parse(els.jsonBox.value)
+          state = migrateIfNeeded(incoming)
+          saveState(state)
+          closeModal()
+          render()
+        } catch (e) {
+          alert("Invalid JSON. Please paste the exported JSON exactly.")
+        }
+      }
 
-function updateStats(){
-  const totalWeeks = weeks.length;
-  const readDoneCount = weeks.reduce((n,wk)=> n + (state[wk.w]?.readDone ? 1 : 0), 0);
+      els.resetBtn.onclick = () => {
+        if (!confirm("Reset all progress? This cannot be undone.")) return
+        localStorage.removeItem(STORAGE_KEY)
+        state = buildInitialState()
+        saveState(state)
+        render()
+      }
 
-  // Video totals: count individual videos across all weeks
-  const videoWeeks = weeks.filter(wk=>hasVideos(wk.w));
-  const vWeeksCount = videoWeeks.length;
+      els.q.oninput = () => render()
 
-  let vTotal = 0;
-  let vDone = 0;
-
-  for(const wk of videoWeeks){
-    const items = videosByWeek[wk.w] || [];
-    vTotal += items.length;
-    const vids = state[wk.w]?.videos || {};
-    for(const it of items){
-      const id = stableId(wk.w, it);
-      if(vids[id]) vDone += 1;
-    }
-  }
-
-  const pct = totalWeeks ? Math.round((readDoneCount/totalWeeks)*100) : 0;
-  const vpct = vTotal ? Math.round((vDone/vTotal)*100) : 0;
-
-  els.pct.textContent = `${pct}%`;
-  els.vpct.textContent = `${vpct}%`;
-  els.rdone.textContent = readDoneCount;
-  els.rtotal.textContent = totalWeeks;
-  els.vweeks.textContent = vWeeksCount;
-  els.vdone.textContent = vDone;
-  els.vtotal.textContent = vTotal;
-}
-
-// Export/Import
-function openModal(mode){
-  els.modal.classList.add("open");
-  if(mode === "export"){
-    els.modalTitle.textContent = "Export progress";
-    els.modalHelp.textContent = "Copy this JSON and save it (or send it).";
-    els.applyBtn.style.display = "none";
-    els.jsonBox.value = JSON.stringify(state, null, 2);
-  } else {
-    els.modalTitle.textContent = "Import progress";
-    els.modalHelp.textContent = "Paste JSON exported from this app. Then click Apply Import.";
-    els.applyBtn.style.display = "inline-block";
-    els.jsonBox.value = "";
-  }
-}
-function closeModal(){ els.modal.classList.remove("open"); }
-
-els.exportBtn.onclick = ()=> openModal("export");
-els.importBtn.onclick = ()=> openModal("import");
-els.closeBtn.onclick = closeModal;
-
-els.copyBtn.onclick = async ()=>{
-  try{
-    await navigator.clipboard.writeText(els.jsonBox.value);
-    els.copyBtn.textContent = "Copied!";
-    setTimeout(()=> els.copyBtn.textContent="Copy", 900);
-  }catch{
-    alert("Could not copy automatically. Select the text and copy manually.");
-  }
-};
-
-els.applyBtn.onclick = ()=>{
-  try{
-    const incoming = JSON.parse(els.jsonBox.value);
-    state = migrateIfNeeded(incoming);
-    saveState(state);
-    closeModal();
-    render();
-  }catch(e){
-    alert("Invalid JSON. Please paste the exported JSON exactly.");
-  }
-};
-
-els.resetBtn.onclick = ()=>{
-  if(!confirm("Reset all progress? This cannot be undone.")) return;
-  localStorage.removeItem(STORAGE_KEY);
-  state = buildInitialState();
-  saveState(state);
-  render();
-};
-
-els.q.oninput = ()=> render();
-
-render();
-</script>
-</body>
+      render()
+    </script>
+  </body>
 </html>
